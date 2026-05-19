@@ -1,5 +1,5 @@
 FROM node:24-alpine
-# node
+
 
 RUN addgroup devopsgrp && adduser -S -Gdevopsgrp devopsusr
 
