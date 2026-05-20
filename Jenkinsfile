@@ -77,55 +77,34 @@ pipeline {
 
     post {
 
-        success {
+    success {
 
-            emailext(
+        emailext(
 
-                subject: "SUCCESS: ${env.JOB_NAME} Build ${env.BUILD_NUMBER}",
+            subject: "SUCCESS: ${env.JOB_NAME}",
 
-                body: """
-                <h2>Deployment Successful</h2>
+            body: "Deployment Successful",
 
-                <p>Job Name: ${env.JOB_NAME}</p>
-
-                <p>Build Number: ${env.BUILD_NUMBER}</p>
-
-                <p>Status: SUCCESS</p>
-
-                <p>Docker Image: ${env.FULL_IMAGE}</p>
-
-                <p>Build URL: ${env.BUILD_URL}</p>
-                """,
-
-                to: 'vishamay555@gmail.com'
-            )
-        }
-
-        failure {
-
-            emailext(
-
-                subject: "FAILED: ${env.JOB_NAME} Build ${env.BUILD_NUMBER}",
-
-                body: """
-                <h2>Deployment Failed</h2>
-
-                <p>Job Name: ${env.JOB_NAME}</p>
-
-                <p>Build Number: ${env.BUILD_NUMBER}</p>
-
-                <p>Status: FAILED</p>
-
-                <p>Check Logs: ${env.BUILD_URL}</p>
-                """,
-
-                to: 'vishamay555@gmail.com'
-            )
-        }
-
-        always {
-
-            sh 'docker image prune -af || true'
-        }
+            to: "vishamay555@gmail.com"
+        )
     }
+
+    failure {
+
+        emailext(
+
+            subject: "FAILED: ${env.JOB_NAME}",
+
+            body: "Pipeline Failed",
+
+            to: "vishamay555@gmail.com"
+        )
+    }
+
+    always {
+
+        sh 'docker image prune -af || true'
+    }
+}
+
 }
