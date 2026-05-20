@@ -28,7 +28,9 @@ pipeline {
 
             steps {
 
-                sh 'docker build -t $FULL_IMAGE .'
+                sh '''
+                docker build -t $FULL_IMAGE .
+                '''
             }
         }
 
@@ -52,7 +54,9 @@ pipeline {
 
             steps {
 
-                sh 'docker compose down || true'
+                sh '''
+                 docker compose down || true
+                '''
             }
         }
 
@@ -60,7 +64,9 @@ pipeline {
 
             steps {
 
-                sh 'docker compose up -d --build'
+                sh '''
+                IMAGE_TAG=$BUILD_NUMBER docker compose up -d
+                '''
             }
         }
 
@@ -73,7 +79,8 @@ pipeline {
 
                 sleep 15
 
-                curl -f http://localhost:80                '''
+                curl -f http://localhost:80
+                '''
             }
         }
     }
