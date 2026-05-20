@@ -69,10 +69,11 @@ pipeline {
             steps {
 
                 sh '''
-                sleep 10
+                echo "Waiting for application..."
 
-                curl -f http://localhost:3000
-                '''
+                sleep 15
+
+                curl -f http://localhost:80                '''
             }
         }
     }
@@ -83,18 +84,36 @@ pipeline {
 
             mail(
                 to: "${EMAIL}",
-                subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+
+                subject: "SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+
                 body: """
-Deployment Successful
+==================================================
 
-Job Name: ${env.JOB_NAME}
+        DEPLOYMENT SUCCESSFUL
 
-Build Number: ${env.BUILD_NUMBER}
+==================================================
 
-Docker Image: ${env.FULL_IMAGE}
+Job Name:
+${env.JOB_NAME}
+
+Build Number:
+${env.BUILD_NUMBER}
+
+Docker Image:
+${env.FULL_IMAGE}
 
 Build URL:
 ${env.BUILD_URL}
+
+Deployment Time:
+${new Date()}
+
+==================================================
+
+Application deployed successfully.
+
+==================================================
 """
             )
         }
@@ -103,16 +122,35 @@ ${env.BUILD_URL}
 
             mail(
                 to: "${EMAIL}",
-                subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+
+                subject: "FAILED - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+
                 body: """
-Pipeline Failed
+==================================================
 
-Job Name: ${env.JOB_NAME}
+        DEPLOYMENT FAILED
 
-Build Number: ${env.BUILD_NUMBER}
+==================================================
+
+Job Name:
+${env.JOB_NAME}
+
+Build Number:
+${env.BUILD_NUMBER}
 
 Check Logs:
 ${env.BUILD_URL}
+
+Failure Time:
+${new Date()}
+
+==================================================
+
+Pipeline execution failed.
+
+Please check Jenkins logs immediately.
+
+==================================================
 """
             )
         }
