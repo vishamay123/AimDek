@@ -1,51 +1,131 @@
 pipeline {
+
     agent any
 
     environment {
-        APP_NAME = "node-app"
+
+        IMAGE_NAME = "node-app"
+
+        IMAGE_TAG = "${BUILD_NUMBER}"
+
+        FULL_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
     }
 
     stages {
 
-        stage('Clone Code') {
+        stage('Clone Repository') {
+
             steps {
+
                 git branch: 'dev',
                 url: 'https://github.com/vishamay123/AimDek.git'
             }
         }
 
         stage('Build Docker Image') {
+
             steps {
-                sh 'docker compose build'
+
+                sh 'docker build -t $FULL_IMAGE .'
             }
         }
 
-        stage('Stop Old Containers') {
+        stage('Show Docker Images') {
+
             steps {
+
+                sh 'docker images'
+            }
+        }
+
+        stage('Manual Approval') {
+
+            steps {
+
+                input message: 'Deploy to Production?', ok: 'Deploy'
+            }
+        }
+
+        stage('Stop Old Container') {
+
+            steps {
+
                 sh 'docker compose down || true'
             }
         }
 
-        stage('Run Containers') {
+        stage('Deploy New Container') {
+
             steps {
-                sh 'docker compose up -d'
+
+                sh 'docker compose up -d --build'
             }
         }
 
-        stage('Check Running Containers') {
+        stage('Health Check') {
+
             steps {
-                sh 'docker ps'
+
+                sh '''
+                sleep 10
+
+                curl -f http://localhost:3000
+                '''
             }
         }
     }
 
     post {
+
         success {
-            echo 'Deployment Successful!'
+
+            emailext(
+
+                subject: "SUCCESS: ${env.JOB_NAME} Build ${env.BUILD_NUMBER}",
+
+                body: """
+                <h2>Deployment Successful</h2>
+
+                <p>Job Name: ${env.JOB_NAME}</p>
+
+                <p>Build Number: ${env.BUILD_NUMBER}</p>
+
+                <p>Status: SUCCESS</p>
+
+                <p>Docker Image: ${env.FULL_IMAGE}</p>
+
+                <p>Build URL: ${env.BUILD_URL}</p>
+                """,
+
+                to: 'vishamay555@gmail.com'
+            )
         }
 
         failure {
-            echo 'Pipeline Failed!'
+
+            emailext(
+
+                subject: "FAILED: ${env.JOB_NAME} Build ${env.BUILD_NUMBER}",
+
+                body: """
+                <h2>Deployment Failed</h2>
+
+                <p>Job Name: ${env.JOB_NAME}</p>
+
+                <p>Build Number: ${env.BUILD_NUMBER}</p>
+
+                <p>Status: FAILED</p>
+
+                <p>Check Logs: ${env.BUILD_URL}</p>
+                """,
+
+                to: 'vishamay555@gmail.com'
+            )
+        }
+
+        always {
+
+            sh 'docker image prune -af || true'
         }
     }
 }
